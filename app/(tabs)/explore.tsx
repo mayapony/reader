@@ -6,6 +6,7 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { HelloWave } from '@/components/HelloWave';
 
 export default function TabTwoScreen() {
   return (
@@ -90,6 +91,7 @@ export default function TabTwoScreen() {
             </ThemedText>
           ),
         })}
+        <HelloWave />
       </Collapsible>
     </ParallaxScrollView>
   );
