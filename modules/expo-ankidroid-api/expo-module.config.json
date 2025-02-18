@@ -1,0 +1,17 @@
+{
+  "platforms": [
+    "apple",
+    "android",
+    "web"
+  ],
+  "apple": {
+    "modules": [
+      "ExpoAnkiDroidAPIModule"
+    ]
+  },
+  "android": {
+    "modules": [
+      "expo.modules.ankidroidapi.ExpoAnkiDroidAPIModule"
+    ]
+  }
+}
