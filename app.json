@@ -34,7 +34,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "./plugins/withDisableBundleCompression.js",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Slot, Tabs } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
 
@@ -10,6 +10,11 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const showTabs = false; // 控制是否显示导航栏
+
+  if (!showTabs) {
+    return <Slot />; // 直接渲染当前页面
+  }
 
   return (
     <Tabs
