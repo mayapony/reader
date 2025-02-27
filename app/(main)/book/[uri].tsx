@@ -21,6 +21,8 @@ import md5 from "crypto-js/md5";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { YStack } from "tamagui";
+import { translationByBaidu } from "@/api/translation";
+import { addTranslationCard } from "@/utils/anki";
 
 export default function Book() {
   const { width, height } = useWindowDimensions();
@@ -86,75 +88,17 @@ export default function Book() {
             }}
             menuItems={[
               {
-                label: "🟡",
-                action: (cfiRange) => {
-                  addAnnotation("highlight", cfiRange, undefined);
-                  return true;
-                },
-              },
-              {
-                label: "🔴",
-                action: (cfiRange) => {
-                  addAnnotation("highlight", cfiRange, undefined);
-                  return true;
-                },
-              },
-              {
-                label: "🟢",
-                action: (cfiRange) => {
-                  addAnnotation("highlight", cfiRange, undefined);
-                  return true;
-                },
-              },
-              {
                 label: "To Anki",
                 action: (cfiRange, text) => {
                   console.log("Add Note", cfiRange, text);
-                  const params = {
-                    q: text,
-                    from: "auto",
-                    to: "zh",
-                    appid: "",
-                    salt: "123456",
-                    get sign() {
-                      return md5(this.appid + this.q + this.salt + "");
-                    },
-                  };
-                  console.log({ params });
-                  axios({
-                    method: "post",
-                    url: "https://fanyi-api.baidu.com/api/trans/vip/translate",
-                    params: params,
-                  })
-                    .then((response) => {
-                      const transResult = response.data?.trans_result?.[0]?.dst;
-                      if (!transResult) {
-                        throw new Error("Translation Failed");
-                      }
-                      const card = {
-                        Front: text,
-                        Back: transResult,
-                      };
-                      console.log({ card });
-                      ExpoAnkiDroidApiModule.addCardsToAnkiDroidAsync([card])
-                        .then((added) => {
-                          console.log(added);
-                          ToastAndroid.show("Card Added", ToastAndroid.SHORT);
-                        })
-                        .catch((error) => {
-                          console.log(error);
-                          ToastAndroid.show(
-                            "Card Add Failed",
-                            ToastAndroid.SHORT
-                          );
-                        });
+
+                  translationByBaidu(text)
+                    .then((dst) => {
+                      addTranslationCard(text, dst);
                     })
                     .catch((error) => {
                       console.log(error);
-                      ToastAndroid.show(
-                        "Translation Failed",
-                        ToastAndroid.SHORT
-                      );
+                      ToastAndroid.show("翻译失败！", ToastAndroid.SHORT);
                     });
                   return true;
                 },
