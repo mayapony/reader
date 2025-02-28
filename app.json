@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "reader",
-    "slug": "reader",
+    "name": "Memoread",
+    "slug": "Memoread",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -36,7 +36,8 @@
         }
       ],
       "./plugins/withDisableBundleCompression.js",
-      "expo-font"
+      "expo-font",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
