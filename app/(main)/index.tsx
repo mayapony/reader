@@ -30,6 +30,7 @@ import {
 } from "tamagui";
 import { Book } from "@/interfaces/book";
 import { Link, router } from "expo-router";
+import { getMetadataFromEpub, saveEpubFileToAppFolder } from "@/utils/epub";
 
 const SearchBar = styled(TextInput, {
   borderWidth: 1,
@@ -73,19 +74,37 @@ const BookShelfScreen = () => {
   const handleImportBook = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["application/epub+zip", "application/pdf"],
+        type: ["application/epub+zip"],
         copyToCacheDirectory: true, // 自动复制到应用缓存目录
       });
 
+      if (result.canceled) return;
+
       if (result.assets?.[0]) {
-        const { uri, name } = result.assets[0];
+        const { uri } = result.assets[0];
+
+        const copyUri = await saveEpubFileToAppFolder(uri);
+        if (!copyUri) throw new Error("保存EPUB副本失败");
+
+        const metadata = await getMetadataFromEpub(uri);
+        if (!metadata) throw new Error("获取metadata失败");
+
+        const { title, coverUri, author } = metadata;
+        console.log({
+          title,
+          coverUri,
+          author,
+          copyUri,
+        });
+
         const newBook: Book = {
           id: Date.now().toString(),
-          title: name.replace(/\.[^/.]+$/, ""),
-          author: "未知作者",
-          cover: `https://picsum.photos/200/300?random=${Date.now()}`,
+          title: title,
+          author: author,
+          cover:
+            coverUri ?? `https://picsum.photos/200/300?random=${Date.now()}`,
           progress: 0,
-          fileUri: uri,
+          fileUri: copyUri,
         };
         const updatedBooks = [...books, newBook];
         setBooks(updatedBooks);
