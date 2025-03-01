@@ -1,5 +1,5 @@
-import { sqliteTable, text, integer, index, uniqueIndex, real } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
+import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // 书籍表
 export const books = sqliteTable(
