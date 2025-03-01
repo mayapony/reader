@@ -1,11 +1,11 @@
-import { requireNativeView } from 'expo';
-import * as React from 'react';
+import { requireNativeView } from 'expo'
+import * as React from 'react'
 
-import { ExpoAnkiDroidAPIViewProps } from './ExpoAnkiDroidAPI.types';
+import { ExpoAnkiDroidAPIViewProps } from './ExpoAnkiDroidAPI.types'
 
 const NativeView: React.ComponentType<ExpoAnkiDroidAPIViewProps> =
-  requireNativeView('ExpoAnkiDroidAPI');
+  requireNativeView('ExpoAnkiDroidAPI')
 
 export default function ExpoAnkiDroidAPIView(props: ExpoAnkiDroidAPIViewProps) {
-  return <NativeView {...props} />;
+  return <NativeView {...props} />
 }

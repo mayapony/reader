@@ -1,19 +1,19 @@
-import { registerWebModule, NativeModule } from 'expo';
+import { registerWebModule, NativeModule } from 'expo'
 
-import { ChangeEventPayload } from './ExpoAnkiDroidAPI.types';
+import { ChangeEventPayload } from './ExpoAnkiDroidAPI.types'
 
 type ExpoAnkiDroidAPIModuleEvents = {
-  onChange: (params: ChangeEventPayload) => void;
+  onChange: (params: ChangeEventPayload) => void
 }
 
 class ExpoAnkiDroidAPIModule extends NativeModule<ExpoAnkiDroidAPIModuleEvents> {
-  PI = Math.PI;
+  PI = Math.PI
   async setValueAsync(value: string): Promise<void> {
-    this.emit('onChange', { value });
+    this.emit('onChange', { value })
   }
   hello() {
-    return 'Hello world! 👋';
+    return 'Hello world! 👋'
   }
-};
+}
 
-export default registerWebModule(ExpoAnkiDroidAPIModule);
+export default registerWebModule(ExpoAnkiDroidAPIModule)

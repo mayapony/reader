@@ -1,17 +1,9 @@
 {
-  "platforms": [
-    "apple",
-    "android",
-    "web"
-  ],
+  "platforms": ["apple", "android", "web"],
   "apple": {
-    "modules": [
-      "ExpoAnkiDroidAPIModule"
-    ]
+    "modules": ["ExpoAnkiDroidAPIModule"]
   },
   "android": {
-    "modules": [
-      "expo.modules.ankidroidapi.ExpoAnkiDroidAPIModule"
-    ]
+    "modules": ["expo.modules.ankidroidapi.ExpoAnkiDroidAPIModule"]
   }
 }

@@ -1,6 +1,6 @@
-import * as React from 'react';
+import * as React from 'react'
 
-import { ExpoAnkiDroidAPIViewProps } from './ExpoAnkiDroidAPI.types';
+import { ExpoAnkiDroidAPIViewProps } from './ExpoAnkiDroidAPI.types'
 
 export default function ExpoAnkiDroidAPIView(props: ExpoAnkiDroidAPIViewProps) {
   return (
@@ -11,5 +11,5 @@ export default function ExpoAnkiDroidAPIView(props: ExpoAnkiDroidAPIViewProps) {
         onLoad={() => props.onLoad({ nativeEvent: { url: props.url } })}
       />
     </div>
-  );
+  )
 }

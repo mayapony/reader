@@ -1,4 +1,4 @@
-const { withAppBuildGradle } = require("@expo/config-plugins");
+const { withAppBuildGradle } = require('@expo/config-plugins')
 
 /**
  * A Config Plugin to disable bundle compression in Android build.gradle.
@@ -7,10 +7,10 @@ const { withAppBuildGradle } = require("@expo/config-plugins");
  */
 const withDisableBundleCompression = (config) => {
   return withAppBuildGradle(config, (config) => {
-    let buildGradle = config.modResults.contents;
+    let buildGradle = config.modResults.contents
 
-    const hasAndroidResources = buildGradle.includes("androidResources {");
-    const hasNoCompress = buildGradle.includes("noCompress");
+    const hasAndroidResources = buildGradle.includes('androidResources {')
+    const hasNoCompress = buildGradle.includes('noCompress')
 
     if (hasAndroidResources && hasNoCompress) {
       if (
@@ -18,38 +18,38 @@ const withDisableBundleCompression = (config) => {
         buildGradle.includes("noCompress += 'bundle'") ||
         buildGradle.includes('noCompress += "bundle"')
       ) {
-        return config;
+        return config
       }
 
-      const lines = buildGradle.split("\n");
+      const lines = buildGradle.split('\n')
       const modifiedLines = lines.map((line) => {
-        if (line.trim().startsWith("noCompress")) {
-          if (line.includes("+=")) {
-            return line.replace(/\]/, ', "bundle"]');
-          } else if (line.includes("=")) {
-            return line.replace("=", '+= ["bundle",') + "]";
+        if (line.trim().startsWith('noCompress')) {
+          if (line.includes('+=')) {
+            return line.replace(/\]/, ', "bundle"]')
+          } else if (line.includes('=')) {
+            return line.replace('=', '+= ["bundle",') + ']'
           }
         }
-        return line;
-      });
-      config.modResults.contents = modifiedLines.join("\n");
+        return line
+      })
+      config.modResults.contents = modifiedLines.join('\n')
     } else {
-      const androidBlock = buildGradle.indexOf("android {");
+      const androidBlock = buildGradle.indexOf('android {')
       if (androidBlock !== -1) {
-        const insertPosition = buildGradle.indexOf("\n", androidBlock) + 1;
+        const insertPosition = buildGradle.indexOf('\n', androidBlock) + 1
         const newContent =
           buildGradle.slice(0, insertPosition) +
-          "    androidResources {\n" +
+          '    androidResources {\n' +
           '        noCompress += ["bundle"]\n' +
-          "    }\n" +
-          buildGradle.slice(insertPosition);
+          '    }\n' +
+          buildGradle.slice(insertPosition)
 
-        config.modResults.contents = newContent;
+        config.modResults.contents = newContent
       }
     }
 
-    return config;
-  });
-};
+    return config
+  })
+}
 
-module.exports = withDisableBundleCompression;
+module.exports = withDisableBundleCompression
