@@ -1,5 +1,6 @@
-import { createThemes, defaultComponentThemes } from '@tamagui/theme-builder'
 import * as Colors from '@tamagui/colors'
+import { createThemes, defaultComponentThemes } from '@tamagui/theme-builder'
+import { darkTokens, lightTokens } from './tokens'
 
 const darkPalette = [
   'hsla(240, 21%, 15%, 1)',
@@ -66,6 +67,7 @@ const builtThemes = createThemes({
         ...Colors.yellow,
         ...lightShadows,
         shadowColor: lightShadows.shadow1,
+        ...lightTokens,
       },
       dark: {
         ...Colors.greenDark,
@@ -73,6 +75,7 @@ const builtThemes = createThemes({
         ...Colors.yellowDark,
         ...darkShadows,
         shadowColor: darkShadows.shadow1,
+        ...darkTokens,
       },
     },
   },

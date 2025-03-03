@@ -1,17 +1,13 @@
-import { Button, Text, ToastAndroid, useWindowDimensions, View } from 'react-native'
+import { translationByBaidu } from '@/api/translation'
+import { addTranslationCard } from '@/utils/anki'
 import { Annotation, Reader, ReaderProvider, useReader } from '@epubjs-react-native/core'
 import { useFileSystem } from '@epubjs-react-native/expo-file-system'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import ExpoAnkiDroidApiModule from '@/modules/expo-ankidroid-api'
-import * as Notifications from 'expo-notifications'
-import axios from 'axios'
-import md5 from 'crypto-js/md5'
 import { useLocalSearchParams } from 'expo-router'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { ToastAndroid, useWindowDimensions } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { YStack } from 'tamagui'
-import { translationByBaidu } from '@/api/translation'
-import { addTranslationCard } from '@/utils/anki'
 
 export default function Book() {
   const { width, height } = useWindowDimensions()
@@ -26,7 +22,7 @@ export default function Book() {
   const bookUri = useMemo(() => params.uri + '', [params])
 
   return (
-    <YStack backgroundColor={'red'} justifyContent="center" alignItems="center" flex={1}>
+    <YStack alignItems="center" flex={1}>
       <GestureHandlerRootView>
         <ReaderProvider>
           <Reader

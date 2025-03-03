@@ -45,3 +45,4 @@ build
 
 .env
 drizzle
+.tamagui

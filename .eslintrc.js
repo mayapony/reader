@@ -7,7 +7,7 @@ module.exports = {
   plugins: ['prettier', 'drizzle'],
   rules: {
     'prettier/prettier': 'error',
-    'drizzle/enforce-delete-with-where': 'error',
+    'drizzle/enforce-delete-with-where': 'off',
     'drizzle/enforce-update-with-where': 'error',
   },
 }

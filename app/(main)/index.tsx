@@ -1,22 +1,15 @@
+import MultiBottom from '@/components/bookshelf/MutilBottom'
+import ModernSearchBar from '@/components/bookshelf/SearchBar'
 import { useDrizzleDB } from '@/components/common/DatabaseProvider'
-import { books } from '@/db/schema/book'
-import { Book } from '@/interfaces/book'
-import { getMetadataFromEpub, saveEpubFileToAppFolder } from '@/utils/epub'
+import { SelectBook } from '@/db/schema/book'
+import { MULTI_STATE, useBookManager } from '@/hooks/useBookManager'
 import { MaterialIcons } from '@expo/vector-icons'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import * as DocumentPicker from 'expo-document-picker'
-import { router } from 'expo-router'
-import { useEffect, useState } from 'react'
-import { Alert, FlatList, StyleSheet, TextInput, View } from 'react-native'
-import { Button, Card, Image, styled, Text, XStack, YStack } from 'tamagui'
-
-const SearchBar = styled(TextInput, {
-  borderWidth: 1,
-  borderRadius: 8,
-  padding: 10,
-  width: '80%',
-})
+import { useNavigation, useRouter } from 'expo-router'
+import { useEffect } from 'react'
+import { Alert, FlatList, StyleSheet, View } from 'react-native'
+import { Button, Card, Image, styled, Text, useTheme, XStack, YStack } from 'tamagui'
 
 const BookCard = styled(View, {
   width: '30%',
@@ -33,28 +26,34 @@ const BookTitle = styled(Text, {
   textOverflow: 'ellipsis',
 })
 
-const BookShelfScreen = () => {
-  const drizzleDb = useDrizzleDB()
-  const [tempBooks, setBooks] = useState<Book[]>([])
+export const PrimaryButton = styled(Button, {
+  backgroundColor: '$background',
+  color: '$color',
+})
 
-  const { data, error } = useLiveQuery(drizzleDb.select().from(books))
+const BookShelfScreen = () => {
+  const theme = useTheme()
+  const router = useRouter()
+  const drizzleDb = useDrizzleDB()
+  const navigation = useNavigation()
+  const {
+    multiState,
+    updateMultiState,
+    handleSelectById,
+    selectedBookIds,
+    removeBooks,
+    addBookByUri,
+    loadBookDataError,
+    bookData,
+  } = useBookManager(drizzleDb)
 
   useEffect(() => {
-    if (error) {
-      console.log(error)
+    if (loadBookDataError) {
+      console.log(loadBookDataError)
     } else {
-      console.log(data)
+      console.log(bookData)
     }
-    const loadBooks = async () => {
-      try {
-        const storedBooks = await AsyncStorage.getItem('@books')
-        if (storedBooks) setBooks(JSON.parse(storedBooks))
-      } catch (error) {
-        Alert.alert('错误', '无法加载书籍数据')
-      }
-    }
-    loadBooks()
-  }, [])
+  }, [bookData, loadBookDataError])
 
   const handleImportBook = async () => {
     try {
@@ -67,93 +66,130 @@ const BookShelfScreen = () => {
 
       if (result.assets?.[0]) {
         const { uri } = result.assets[0]
-
-        const copyUri = await saveEpubFileToAppFolder(uri)
-        if (!copyUri) throw new Error('保存EPUB副本失败')
-
-        const metadata = await getMetadataFromEpub(uri)
-        if (!metadata) throw new Error('获取metadata失败')
-
-        const { title, coverUri, author } = metadata
-        console.log({
-          title,
-          coverUri,
-          author,
-          copyUri,
-        })
-
-        const newBook: Book = {
-          id: Date.now().toString(),
-          title: title,
-          author: author,
-          cover: coverUri ?? `https://picsum.photos/200/300?random=${Date.now()}`,
-          progress: 0,
-          fileUri: copyUri,
-        }
-        const updatedBooks = [...tempBooks, newBook]
-        setBooks(updatedBooks)
-        await AsyncStorage.setItem('@books', JSON.stringify(updatedBooks))
+        addBookByUri(uri)
       }
     } catch (error) {
+      console.log(error)
       Alert.alert('错误', '导入图书失败')
     }
   }
 
-  const handleRemoveAllBooks = () => {
-    AsyncStorage.clear()
-    setBooks([])
+  const handleBookLongPress = () => {
+    const isSelecting = multiState === MULTI_STATE.MULTI_SELECTING
+    navigation.setOptions({
+      tabBarStyle: !isSelecting
+        ? { display: 'none' }
+        : {
+            backgroundColor: theme?.background?.val,
+          },
+    })
+    updateMultiState(isSelecting ? MULTI_STATE.NOT_MULTI_SELECTING : MULTI_STATE.MULTI_SELECTING)
   }
 
-  // 渲染书籍项
-  const renderBookItem = ({ item }: { item: Book }) => (
+  const handleBookPress = (book: SelectBook) => {
+    if (multiState === MULTI_STATE.MULTI_SELECTING) {
+      handleSelectById(book.id)
+    } else {
+      router.push({
+        pathname: '/book/[uri]',
+        params: { uri: book.filePath },
+      })
+    }
+  }
+
+  const renderBookItem = ({ item }: { item: SelectBook }) => (
     <BookCard>
       <Card
         animation="bouncy"
         scale={0.9}
         hoverStyle={{ scale: 0.925 }}
         pressStyle={{ scale: 0.875 }}
-        onPress={() =>
-          router.push({
-            pathname: '/book/[uri]',
-            params: { uri: item.fileUri },
-          })
-        }>
-        <Image
-          source={{ uri: item.cover }}
+        onPress={handleBookPress.bind(null, item)}
+        onLongPress={handleBookLongPress}>
+        <View
           style={{
             width: '100%',
-            height: undefined,
-            aspectRatio: 2 / 3,
-            borderRadius: 8,
-          }}
-        />
+          }}>
+          <Image
+            source={{ uri: item.coverPath ?? '' }}
+            style={{
+              width: '100%',
+              height: undefined,
+              aspectRatio: 2 / 3,
+            }}
+          />
+
+          {multiState === MULTI_STATE.MULTI_SELECTING &&
+            (selectedBookIds.has(item.id) ? (
+              <>
+                <MaterialCommunityIcons
+                  name="check-circle"
+                  size={24}
+                  color={theme?.accent1?.val}
+                  style={{
+                    position: 'absolute',
+                    right: 5,
+                    bottom: 5,
+                  }}
+                />
+
+                {/* black overlay for image*/}
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                  }}
+                />
+              </>
+            ) : (
+              <MaterialCommunityIcons
+                name="check-circle-outline"
+                color={theme?.background?.val}
+                style={{
+                  position: 'absolute',
+                  right: 5,
+                  bottom: 5,
+                }}
+                size={24}
+              />
+            ))}
+        </View>
       </Card>
       <BookTitle numberOfLines={1}>{item.title}</BookTitle>
     </BookCard>
   )
 
   return (
-    <YStack flex={1} backgroundColor="$background">
-      <XStack justifyContent="space-between" padding={20}>
-        <SearchBar placeholder="搜索书籍" />
-        <Button onPress={handleImportBook}>导入</Button>
-        <Button onPress={handleRemoveAllBooks}>清空</Button>
-      </XStack>
+    <>
+      <YStack flex={1} backgroundColor="$background">
+        <XStack justifyContent="space-between" padding={20}>
+          <ModernSearchBar />
+          <Button onPress={handleImportBook}>导入</Button>
+        </XStack>
 
-      <FlatList
-        data={tempBooks}
-        renderItem={renderBookItem}
-        keyExtractor={(item) => item.id}
-        numColumns={3}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <MaterialIcons name="menu-book" size={64} color="#444" />
-            <Text style={styles.emptyText}>点击右上角按钮导入图书</Text>
-          </View>
-        }
-      />
-    </YStack>
+        <FlatList
+          data={bookData ?? []}
+          renderItem={renderBookItem}
+          keyExtractor={(item) => `${item.id.toString()}-${item.title}`}
+          numColumns={3}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialIcons name="menu-book" size={64} color="#444" />
+              <Text style={styles.emptyText}>点击右上角按钮导入图书</Text>
+            </View>
+          }
+        />
+
+        {multiState === MULTI_STATE.MULTI_SELECTING && (
+          <MultiBottom handleRemoveBooks={removeBooks.bind(null)} />
+        )}
+      </YStack>
+    </>
   )
 }
 

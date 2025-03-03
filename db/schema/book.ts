@@ -23,3 +23,6 @@ export const books = sqliteTable(
     uniqueIndex('file_path_idx').on(table.filePath),
   ],
 )
+
+export type InsertBook = typeof books.$inferInsert
+export type SelectBook = typeof books.$inferSelect
