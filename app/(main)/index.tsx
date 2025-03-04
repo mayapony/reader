@@ -93,8 +93,8 @@ const BookShelfScreen = () => {
       handleSelectById(book.id)
     } else {
       router.push({
-        pathname: '/book/[uri]',
-        params: { uri: book.filePath },
+        pathname: '/book/[id]',
+        params: { id: book.id },
       })
     }
   }

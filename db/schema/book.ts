@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm'
 import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // 书籍表
-export const books = sqliteTable(
+export const bookTable = sqliteTable(
   'books',
   {
     id: integer('id').primaryKey({ autoIncrement: true }),
@@ -24,5 +24,5 @@ export const books = sqliteTable(
   ],
 )
 
-export type InsertBook = typeof books.$inferInsert
-export type SelectBook = typeof books.$inferSelect
+export type InsertBook = typeof bookTable.$inferInsert
+export type SelectBook = typeof bookTable.$inferSelect

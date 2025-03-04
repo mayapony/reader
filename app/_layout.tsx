@@ -15,6 +15,7 @@ import { useDrizzleStudio } from 'expo-drizzle-studio-plugin'
 import { ActivityIndicator, useColorScheme } from 'react-native'
 import { TamaguiProvider, Theme } from 'tamagui'
 
+import { ReaderProvider } from '@epubjs-react-native/core'
 import Toast from 'react-native-toast-message'
 
 export const DATABASE_NAME = 'db'
@@ -52,13 +53,15 @@ export default function RootLayout() {
         <DrizzleDBProvider value={drizzleDb}>
           <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
             <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-              <Theme name={colorScheme!}>
-                <Stack>
-                  <Stack.Screen name="(main)" options={{ headerShown: false }} />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-                <Toast />
-              </Theme>
+              <ReaderProvider>
+                <Theme name={colorScheme!}>
+                  <Stack>
+                    <Stack.Screen name="(main)" options={{ headerShown: false }} />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
+                  <Toast />
+                </Theme>
+              </ReaderProvider>
             </ThemeProvider>
           </TamaguiProvider>
         </DrizzleDBProvider>

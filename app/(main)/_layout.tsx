@@ -64,7 +64,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="book/[uri]"
+          name="book/[id]"
           options={{
             href: null,
             tabBarStyle: {

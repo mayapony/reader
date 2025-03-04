@@ -1,13 +1,13 @@
 import { sql } from 'drizzle-orm'
 import { index, integer, sqliteTable } from 'drizzle-orm/sqlite-core'
-import { books } from './book'
+import { bookTable } from './book'
 
 // 阅读记录表
-export const readingSessions = sqliteTable(
+export const readingSessionTable = sqliteTable(
   'reading_sessions',
   {
     id: integer('id').primaryKey({ autoIncrement: true }),
-    bookId: integer('book_id').references(() => books.id, {
+    bookId: integer('book_id').references(() => bookTable.id, {
       onDelete: 'cascade',
     }),
     startTime: integer('start_time', { mode: 'timestamp_ms' }).default(sql`(unixepoch())`),

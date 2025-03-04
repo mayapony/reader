@@ -1,22 +1,26 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-import { books } from './book'
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { bookTable } from './book'
 
 // 标注表
-export const annotations = sqliteTable(
+export const annotationTable = sqliteTable(
   'annotations',
   {
     id: integer('id').primaryKey({ autoIncrement: true }),
-    bookId: integer('book_id').references(() => books.id, {
+    bookId: integer('book_id').references(() => bookTable.id, {
       onDelete: 'cascade',
     }),
     type: text('type', {
       enum: ['highlight', 'mark', 'underline', 'note', 'translation'],
     }),
-    selectedText: text('selected_text').notNull(),
+    data: text('data').$default(() => '{}'),
+    cfiRange: text('cfi_range').notNull(),
+    sectionIndex: integer('section_index'),
+    cfiRangeText: text('cfi_range_text').notNull(),
+    iconClass: text('icon_class'),
+    styles: text('styles').$default(() => '{}'),
     noteText: text('note_text'),
     translationText: text('translation_text'),
-    cfiRange: text('cfi_range').notNull(),
     locationPage: integer('location_page'),
     createTime: integer('create_time', { mode: 'timestamp_ms' }).default(sql`(unixepoch())`),
   },

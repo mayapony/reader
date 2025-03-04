@@ -1,5 +1,5 @@
 import { useDrizzleDB } from '@/components/common/DatabaseProvider'
-import { books, InsertBook } from '@/db/schema/book'
+import { bookTable, InsertBook } from '@/db/schema/book'
 import { getMetadataFromEpub, saveEpubFileToAppFolder } from '@/utils/epub'
 import { inArray } from 'drizzle-orm'
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite'
@@ -17,7 +17,9 @@ export const useBookManager = (drizzleDb: ReturnType<typeof useDrizzleDB>) => {
 
   const [selectedBookIds, setSelectedBookIds] = useState<Set<number>>(new Set())
 
-  const { data: bookData, error: loadBookDataError } = useLiveQuery(drizzleDb.select().from(books))
+  const { data: bookData, error: loadBookDataError } = useLiveQuery(
+    drizzleDb.select().from(bookTable),
+  )
 
   const handleSelectById = (id: number) => {
     setSelectedBookIds((prev) => {
@@ -42,8 +44,8 @@ export const useBookManager = (drizzleDb: ReturnType<typeof useDrizzleDB>) => {
     console.log('removing books', selectedBookIds)
 
     drizzleDb
-      .delete(books)
-      .where(inArray(books.id, [...selectedBookIds]))
+      .delete(bookTable)
+      .where(inArray(bookTable.id, [...selectedBookIds]))
       .then((res) => {
         const { changes } = res
         if (changes && changes === selectedBookIds.size) {
@@ -87,7 +89,7 @@ export const useBookManager = (drizzleDb: ReturnType<typeof useDrizzleDB>) => {
       fileHash: 'hash',
     }
 
-    const insertRes = await drizzleDb.insert(books).values(book)
+    const insertRes = await drizzleDb.insert(bookTable).values(book)
     setLoading(false)
     return insertRes
   }
