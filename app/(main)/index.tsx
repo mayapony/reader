@@ -8,7 +8,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import * as DocumentPicker from 'expo-document-picker'
 import { useNavigation, useRouter } from 'expo-router'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Alert, FlatList, StyleSheet, View } from 'react-native'
 import { Button, Card, Image, styled, Text, useTheme, XStack, YStack } from 'tamagui'
 
@@ -55,7 +55,7 @@ const BookShelfScreen = () => {
     } else {
       console.log(bookData)
     }
-  }, [bookData, loadBookDataError])
+  }, [bookData, loadBookDataError, theme?.background?.val])
 
   const handleImportBook = async () => {
     try {

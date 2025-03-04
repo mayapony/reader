@@ -1,15 +1,32 @@
 import { translationByBaidu } from '@/api/translation'
 import { addTranslationCard } from '@/utils/anki'
-import { Annotation, Reader, ReaderProvider, useReader } from '@epubjs-react-native/core'
+import { Annotation, Reader, ReaderProvider, Themes, useReader } from '@epubjs-react-native/core'
 import { useFileSystem } from '@epubjs-react-native/expo-file-system'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { useLocalSearchParams } from 'expo-router'
 import { useMemo, useRef, useState } from 'react'
-import { ToastAndroid, useWindowDimensions } from 'react-native'
+import { ToastAndroid, useColorScheme, useWindowDimensions } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { YStack } from 'tamagui'
+import { useTheme, YStack } from 'tamagui'
+
+import { OverlaySpinner } from '@/components/common/OverlaySpinner'
+import React from 'react'
 
 export default function Book() {
+  const colorScheme = useColorScheme()
+  const theme = useTheme()
+
+  const memReaderDefaultTheme = useMemo(() => {
+    const bodyStyle = {
+      background: theme?.background?.val ?? (colorScheme === 'dark' ? '#000' : '#fff'),
+    }
+    const defaultTheme = colorScheme === 'dark' ? Themes.DARK : Themes.LIGHT
+    return {
+      ...defaultTheme,
+      body: bodyStyle,
+    }
+  }, [colorScheme, theme?.background?.val])
+
   const { width, height } = useWindowDimensions()
 
   const { addAnnotation, removeAnnotation, annotations } = useReader()
@@ -28,6 +45,9 @@ export default function Book() {
           <Reader
             src={bookUri}
             width={width}
+            renderLoadingFileComponent={() => <OverlaySpinner />}
+            renderOpeningBookComponent={() => <OverlaySpinner />}
+            defaultTheme={memReaderDefaultTheme}
             // @ts-ignore
             fileSystem={useFileSystem}
             initialLocation="introduction_001.xhtml"
