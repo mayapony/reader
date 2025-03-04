@@ -1,6 +1,7 @@
 import MultiBottom from '@/components/bookshelf/MutilBottom'
 import ModernSearchBar from '@/components/bookshelf/SearchBar'
 import { useDrizzleDB } from '@/components/common/DatabaseProvider'
+import { OverlaySpinner } from '@/components/common/OverlaySpinner'
 import { SelectBook } from '@/db/schema/book'
 import { MULTI_STATE, useBookManager } from '@/hooks/useBookManager'
 import { MaterialIcons } from '@expo/vector-icons'
@@ -45,6 +46,7 @@ const BookShelfScreen = () => {
     addBookByUri,
     loadBookDataError,
     bookData,
+    loading: managerLoading,
   } = useBookManager(drizzleDb)
 
   useEffect(() => {
@@ -98,69 +100,85 @@ const BookShelfScreen = () => {
   }
 
   const renderBookItem = ({ item }: { item: SelectBook }) => (
-    <BookCard>
-      <Card
-        animation="bouncy"
-        scale={0.9}
-        hoverStyle={{ scale: 0.925 }}
-        pressStyle={{ scale: 0.875 }}
-        onPress={handleBookPress.bind(null, item)}
-        onLongPress={handleBookLongPress}>
-        <View
-          style={{
-            width: '100%',
-          }}>
-          <Image
-            source={{ uri: item.coverPath ?? '' }}
+    <>
+      <BookCard>
+        <Card
+          animation="bouncy"
+          scale={0.9}
+          hoverStyle={{ scale: 0.925 }}
+          pressStyle={{ scale: 0.875 }}
+          onPress={handleBookPress.bind(null, item)}
+          onLongPress={handleBookLongPress}>
+          <View
             style={{
               width: '100%',
-              height: undefined,
-              aspectRatio: 2 / 3,
-            }}
-          />
+            }}>
+            <Image
+              source={{ uri: item.coverPath ?? '' }}
+              style={{
+                width: '100%',
+                height: undefined,
+                aspectRatio: 2 / 3,
+              }}
+            />
 
-          {multiState === MULTI_STATE.MULTI_SELECTING &&
-            (selectedBookIds.has(item.id) ? (
-              <>
-                <MaterialCommunityIcons
-                  name="check-circle"
-                  size={24}
-                  color={theme?.accent1?.val}
-                  style={{
-                    position: 'absolute',
-                    right: 5,
-                    bottom: 5,
-                  }}
-                />
+            {multiState === MULTI_STATE.MULTI_SELECTING &&
+              (selectedBookIds.has(item.id) ? (
+                <>
+                  <MaterialCommunityIcons
+                    name="check-circle"
+                    size={24}
+                    color={theme?.accent1?.val}
+                    style={{
+                      position: 'absolute',
+                      right: 5,
+                      bottom: 5,
+                    }}
+                  />
 
-                {/* black overlay for image*/}
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                  }}
-                />
-              </>
-            ) : (
-              <MaterialCommunityIcons
-                name="check-circle-outline"
-                color={theme?.background?.val}
-                style={{
-                  position: 'absolute',
-                  right: 5,
-                  bottom: 5,
-                }}
-                size={24}
-              />
-            ))}
-        </View>
-      </Card>
-      <BookTitle numberOfLines={1}>{item.title}</BookTitle>
-    </BookCard>
+                  {/* black overlay for image*/}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    color={theme?.background?.val}
+                    style={{
+                      position: 'absolute',
+                      right: 5,
+                      bottom: 5,
+                      zIndex: 2,
+                    }}
+                    size={24}
+                  />
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 1,
+                      backgroundColor: 'rgba(0,0,0,0.1)',
+                    }}
+                  />
+                </>
+              ))}
+          </View>
+        </Card>
+        <BookTitle numberOfLines={1}>{item.title}</BookTitle>
+      </BookCard>
+    </>
   )
 
   return (
@@ -188,6 +206,8 @@ const BookShelfScreen = () => {
         {multiState === MULTI_STATE.MULTI_SELECTING && (
           <MultiBottom handleRemoveBooks={removeBooks.bind(null)} />
         )}
+
+        {managerLoading && <OverlaySpinner />}
       </YStack>
     </>
   )

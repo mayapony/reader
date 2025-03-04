@@ -12,10 +12,12 @@ export enum MULTI_STATE {
 }
 
 export const useBookManager = (drizzleDb: ReturnType<typeof useDrizzleDB>) => {
-  const { data: bookData, error: loadBookDataError } = useLiveQuery(drizzleDb.select().from(books))
+  const [loading, setLoading] = useState(false)
   const [multiState, setMultiState] = useState<MULTI_STATE>(MULTI_STATE.NOT_MULTI_SELECTING)
 
   const [selectedBookIds, setSelectedBookIds] = useState<Set<number>>(new Set())
+
+  const { data: bookData, error: loadBookDataError } = useLiveQuery(drizzleDb.select().from(books))
 
   const handleSelectById = (id: number) => {
     setSelectedBookIds((prev) => {
@@ -35,6 +37,7 @@ export const useBookManager = (drizzleDb: ReturnType<typeof useDrizzleDB>) => {
   }
 
   const removeBooks = () => {
+    setLoading(true)
     if (selectedBookIds.size === 0) return
     console.log('removing books', selectedBookIds)
 
@@ -56,9 +59,13 @@ export const useBookManager = (drizzleDb: ReturnType<typeof useDrizzleDB>) => {
       .catch((error) => {
         console.log(error)
       })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   const addBookByUri = async (uri: string) => {
+    setLoading(true)
     const copyUri = await saveEpubFileToAppFolder(uri)
     if (!copyUri) throw new Error('保存EPUB副本失败')
 
@@ -81,7 +88,7 @@ export const useBookManager = (drizzleDb: ReturnType<typeof useDrizzleDB>) => {
     }
 
     const insertRes = await drizzleDb.insert(books).values(book)
-
+    setLoading(false)
     return insertRes
   }
 
@@ -94,5 +101,6 @@ export const useBookManager = (drizzleDb: ReturnType<typeof useDrizzleDB>) => {
     bookData,
     loadBookDataError,
     addBookByUri,
+    loading,
   }
 }
