@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { Annotation, useReader } from '@epubjs-react-native/core'
+import { Annotation } from '@epubjs-react-native/core'
 import { BottomSheetView, TouchableOpacity } from '@gorhom/bottom-sheet'
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Button, Text } from 'tamagui'
+import { Button, Text, useTheme } from 'tamagui'
 
 interface Props {
   annotation: Annotation
@@ -12,34 +12,33 @@ interface Props {
 }
 
 function AnnotationItem({ annotation, onPressAnnotation, onRemoveAnnotation }: Props) {
-  const { theme } = useReader()
+  const theme = useTheme()
+
   return (
-    <BottomSheetView key={annotation.cfiRange} style={styles.container}>
-      <View style={styles.row}>
+    <BottomSheetView
+      key={annotation.cfiRange}
+      style={{
+        ...styles.container,
+        padding: 8,
+        borderRadius: 8,
+      }}>
+      <View
+        style={{
+          ...styles.row,
+        }}>
         <View
           style={{
             ...styles.color,
             backgroundColor: annotation.styles?.color,
-            borderColor: 'red',
+            borderColor: theme?.background01?.val,
           }}
         />
 
         <TouchableOpacity onPress={() => onPressAnnotation(annotation)}>
-          {annotation.type === 'highlight' && (
-            <Text
-              style={{
-                ...styles.cfiRange,
-                color: 'red',
-              }}>
-              {annotation.cfiRange}
-            </Text>
-          )}
-
           {annotation.type !== 'highlight' && (
             <Text
               style={{
                 ...styles.observation,
-                color: 'red',
               }}>
               {annotation.data?.observation}
             </Text>
@@ -48,7 +47,6 @@ function AnnotationItem({ annotation, onPressAnnotation, onRemoveAnnotation }: P
           <Text
             style={{
               ...styles.cfiRangeText,
-              color: 'red',
             }}
             numberOfLines={2}>
             &quot;{annotation.cfiRangeText}&quot;

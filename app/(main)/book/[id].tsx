@@ -9,7 +9,7 @@ import { useTheme, YStack } from 'tamagui'
 
 import { useDrizzleDB } from '@/components/common/DatabaseProvider'
 import { OverlaySpinner } from '@/components/common/OverlaySpinner'
-import { AnnotationsList } from '@/components/reader/AnnotationsList'
+import { AnnotationsList, Selection } from '@/components/reader/AnnotationsList'
 import { annotationTable } from '@/db/schema/annotation'
 import { bookTable, SelectBook } from '@/db/schema/book'
 import { and, eq } from 'drizzle-orm'
@@ -71,7 +71,11 @@ export default function Book() {
         const initAnno: Annotation[] = result.map((annotation) => ({
           ...annotation,
           styles: JSON.parse(annotation.styles ?? '{}'),
-          data: JSON.parse(annotation.data ?? '{}'),
+          data: {
+            ...JSON.parse(annotation.data ?? '{}'),
+            id: annotation.id,
+            bookId: annotation.bookId,
+          },
         })) as Annotation[]
         console.log({ initAnno })
         if (result) setInitialAnnotations(initAnno)
@@ -148,6 +152,7 @@ export default function Book() {
               }
             }}
             onPressAnnotation={(annotation) => {
+              console.log(`selected annotation ${JSON.stringify(annotation)}`)
               setSelectedAnnotation(annotation)
               annotationsListRef.current?.present()
             }}
@@ -184,10 +189,19 @@ export default function Book() {
                 },
               },
               {
-                label: 'Add Note',
+                label: '笔记',
                 action: (cfiRange, text) => {
                   setSelection({ cfiRange, text })
                   addAnnotation('highlight', cfiRange, { isTemp: true })
+                  annotationsListRef.current?.present()
+                  return true
+                },
+              },
+              {
+                label: '翻译',
+                action: (cfiRange, text) => {
+                  setSelection({ cfiRange, text })
+                  addAnnotation('highlight', cfiRange, { isTranslation: true })
                   annotationsListRef.current?.present()
                   return true
                 },

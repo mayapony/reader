@@ -26,3 +26,6 @@ export const annotationTable = sqliteTable(
   },
   (table) => [index('book_loc_idx').on(table.bookId, table.locationPage)],
 )
+
+export type SelectAnnotation = typeof annotationTable.$inferSelect
+export type InsertAnnotation = typeof annotationTable.$inferInsert

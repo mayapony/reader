@@ -8,11 +8,10 @@ import {
 import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types'
 import React, { forwardRef } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Button, Text } from 'tamagui'
 import AnnotationForm from './AnnotationForm'
 import AnnotationItem from './AnnotationItem'
 
-type Selection = {
+export type Selection = {
   cfiRange: string
   text: string
 }
@@ -63,16 +62,6 @@ export const AnnotationsList = forwardRef<Ref, Props>(
     const header = React.useCallback(
       () => (
         <View style={{ backgroundColor: theme.body.background }}>
-          <View style={styles.title}>
-            <Text variant="titleMedium" style={{ color: 'red' }}>
-              Annotations
-            </Text>
-
-            <Button mode="text" textColor={'red'} onPress={onClose}>
-              Close
-            </Button>
-          </View>
-
           {(selection || selectedAnnotation) && (
             <AnnotationForm
               annotation={selectedAnnotation}
@@ -104,7 +93,7 @@ export const AnnotationsList = forwardRef<Ref, Props>(
               (annotation) => !annotation?.data?.isTemp && annotation.type !== 'mark',
             )}
             showsVerticalScrollIndicator={false}
-            keyExtractor={(item) => item.cfiRange}
+            keyExtractor={(item) => item.cfiRange + item.type + item.data}
             renderItem={renderItem}
             ListHeaderComponent={header}
             style={{ width: '100%' }}

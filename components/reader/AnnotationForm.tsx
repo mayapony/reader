@@ -1,5 +1,6 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import { useAnnotation } from '@/hooks/useAnnotation'
 import { Annotation, useReader } from '@epubjs-react-native/core'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import React, { useEffect } from 'react'
@@ -19,6 +20,8 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
 
   const { addAnnotation, updateAnnotation, annotations, theme } = useReader()
 
+  const { handleUpdateAnnotation } = useAnnotation()
+
   useEffect(() => {
     if (annotation) {
       setObservation(annotation.data?.observation)
@@ -32,7 +35,7 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
   }, [annotation])
   return (
     <View style={styles.container}>
-      {annotation?.type !== 'highlight' && (
+      {(annotation?.type !== 'highlight' || annotation?.data?.isTranslation) && (
         <BottomSheetTextInput
           value={observation}
           style={styles.input}
@@ -133,7 +136,7 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
                   )
                 })
               } else {
-                updateAnnotation(
+                handleUpdateAnnotation(
                   annotation,
                   {
                     ...annotation.data,
