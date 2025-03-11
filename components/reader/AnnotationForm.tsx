@@ -3,8 +3,9 @@
 import { useAnnotation } from '@/hooks/useAnnotation'
 import { Annotation, useReader } from '@epubjs-react-native/core'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Button, useTheme } from 'tamagui'
 
 interface Props {
   annotation?: Annotation
@@ -12,13 +13,22 @@ interface Props {
   onClose: () => void
 }
 
-export const COLORS = ['#C20114', '#39A2AE', '#CBA135', '#23CE6B', '#090C02']
-
 function AnnotationForm({ annotation, selection, onClose }: Props) {
-  const [observation, setObservation] = React.useState('')
+  const theme = useTheme()
+  const COLORS = useMemo(
+    () => [
+      theme?.o_red?.val,
+      theme?.o_blue?.val,
+      theme?.o_yellow?.val,
+      theme?.o_green?.val,
+      theme?.o_purple?.val,
+    ],
+    [theme],
+  )
+  const [observation, setObservation] = React.useState(annotation?.data?.observation ?? '')
   const [color, setColor] = React.useState(COLORS[0])
 
-  const { addAnnotation, updateAnnotation, annotations, theme } = useReader()
+  const { addAnnotation, updateAnnotation, annotations } = useReader()
 
   const { handleUpdateAnnotation } = useAnnotation()
 
@@ -32,7 +42,7 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
       setObservation('')
       setColor(COLORS[0])
     }
-  }, [annotation])
+  }, [annotation, COLORS])
   return (
     <View style={styles.container}>
       {(annotation?.type !== 'highlight' || annotation?.data?.isTranslation) && (
@@ -66,7 +76,7 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
               {color === item && (
                 <Text
                   style={{
-                    color: '#fafafa',
+                    color: theme?.background?.val,
                     fontSize: 12,
                     fontWeight: 'bold',
                   }}>
@@ -94,11 +104,6 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
                 { key, text: selection!.text, observation },
                 { color, opacity: 0.8 },
               )
-              addAnnotation('mark', selection!.cfiRange, {
-                key,
-                text: selection!.text,
-                observation,
-              })
 
               setObservation('')
               onClose()
@@ -108,49 +113,49 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
         )}
 
         {annotation && (
-          <TouchableOpacity
-            style={{
-              backgroundColor: '#f6f8ff',
-              width: 100,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 12,
-            }}
-            onPress={() => {
-              /**
-               * Required for the "add note" scenario, as an "underline" and "mark" type annotation is created in it and both work as one...
-               */
-              if (annotation.data?.key) {
-                const withMarkAnnotations = annotations.filter(
-                  ({ data }) => data.key === annotation.data.key,
-                )
+          <>
+            <Button size="$2" theme="accent">
+              <Text>同步Anki</Text>
+            </Button>
+            <Button
+              size="$2"
+              onPress={() => {
+                /**
+                 * Required for the "add note" scenario, as an "underline" and "mark" type annotation is created in it and both work as one...
+                 */
+                if (annotation.data?.key) {
+                  const withMarkAnnotations = annotations.filter(
+                    ({ data }) => data.key === annotation.data.key,
+                  )
 
-                withMarkAnnotations.forEach((item) => {
-                  updateAnnotation(
-                    item,
+                  withMarkAnnotations.forEach((item) => {
+                    updateAnnotation(
+                      item,
+                      {
+                        ...item.data,
+                        observation,
+                      },
+                      { ...item.styles, color },
+                    )
+                  })
+                } else {
+                  console.log({ color })
+                  handleUpdateAnnotation(
+                    annotation,
                     {
-                      ...item.data,
+                      ...annotation.data,
                       observation,
                     },
-                    { ...item.styles, color },
+                    { ...annotation.styles, color },
                   )
-                })
-              } else {
-                handleUpdateAnnotation(
-                  annotation,
-                  {
-                    ...annotation.data,
-                    observation,
-                  },
-                  { ...annotation.styles, color },
-                )
-              }
+                }
 
-              onClose()
-              setObservation('')
-            }}>
-            <Text style={{ textAlign: 'center', color: '#090c02' }}>Update Note</Text>
-          </TouchableOpacity>
+                onClose()
+                setObservation('')
+              }}>
+              <Text>更新</Text>
+            </Button>
+          </>
         )}
       </View>
     </View>
@@ -182,9 +187,6 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     marginRight: 10,
-    borderColor: '#000',
-    borderStyle: 'solid',
-    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },

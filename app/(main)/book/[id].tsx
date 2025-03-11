@@ -7,12 +7,13 @@ import { useColorScheme, useWindowDimensions } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useTheme, YStack } from 'tamagui'
 
+import { translationByBaidu } from '@/api/translation'
 import { useDrizzleDB } from '@/components/common/DatabaseProvider'
 import { OverlaySpinner } from '@/components/common/OverlaySpinner'
 import { AnnotationsList, Selection } from '@/components/reader/AnnotationsList'
 import { annotationTable } from '@/db/schema/annotation'
 import { bookTable, SelectBook } from '@/db/schema/book'
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import React from 'react'
 
 export default function Book() {
@@ -35,7 +36,7 @@ export default function Book() {
 
   const { width, height } = useWindowDimensions()
 
-  const { addAnnotation, removeAnnotation, annotations } = useReader()
+  const { addAnnotation, removeAnnotation, annotations, updateAnnotation } = useReader()
   const [selection, setSelection] = useState<Selection | null>(null)
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | undefined>(undefined)
   const [tempMark, setTempMark] = useState<Annotation | null>(null)
@@ -77,7 +78,9 @@ export default function Book() {
             bookId: annotation.bookId,
           },
         })) as Annotation[]
-        console.log({ initAnno })
+        console.log('================')
+        console.log(JSON.stringify(initAnno))
+        console.log('================')
         if (result) setInitialAnnotations(initAnno)
       } catch (error) {
         console.log(error)
@@ -86,7 +89,7 @@ export default function Book() {
     [drizzleDb, params?.id, router],
   )
 
-  const handleAddAnnotation = useCallback(
+  const syncAddedAnnotation2db = useCallback(
     async (annotation: Annotation) => {
       if (!selectedBook) return
 
@@ -102,29 +105,22 @@ export default function Book() {
           data: JSON.stringify(annotation.data),
         })
         console.log(result)
+        updateAnnotation(
+          annotation,
+          {
+            ...annotation.data,
+            id: result.lastInsertRowId,
+            bookId: selectedBook.id,
+          },
+          {
+            ...annotation.styles,
+          },
+        )
       } catch (error) {
         console.log(error)
       }
     },
-    [drizzleDb, selectedBook],
-  )
-  const handleDeleteAnnotation = useCallback(
-    async (annotation: Annotation) => {
-      if (!selectedBook) return
-      try {
-        await drizzleDb
-          .delete(annotationTable)
-          .where(
-            and(
-              eq(annotationTable.bookId, selectedBook.id),
-              eq(annotationTable.cfiRange, annotation.cfiRange),
-            ),
-          )
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    [drizzleDb, selectedBook],
+    [drizzleDb, selectedBook, updateAnnotation],
   )
 
   useEffect(() => {
@@ -146,9 +142,14 @@ export default function Book() {
             initialLocation=""
             initialAnnotations={initialAnnotations}
             onAddAnnotation={(annotation) => {
-              handleAddAnnotation(annotation)
               if (annotation.type === 'highlight' && annotation.data?.isTemp) {
                 setTempMark(annotation)
+              } else if (annotation.data?.isTranslation) {
+                console.log(annotation)
+                setSelectedAnnotation(annotation)
+                syncAddedAnnotation2db(annotation)
+              } else {
+                syncAddedAnnotation2db(annotation)
               }
             }}
             onPressAnnotation={(annotation) => {
@@ -165,7 +166,7 @@ export default function Book() {
                 action: (cfiRange) => {
                   console.log({ cfiRange })
                   addAnnotation('highlight', cfiRange, undefined, {
-                    color: '#CBA135',
+                    color: theme?.yellow?.val,
                   })
                   return true
                 },
@@ -174,7 +175,7 @@ export default function Book() {
                 label: '🔴',
                 action: (cfiRange) => {
                   addAnnotation('highlight', cfiRange, undefined, {
-                    color: theme?.red1?.val,
+                    color: theme?.red?.val,
                   })
                   return true
                 },
@@ -183,7 +184,7 @@ export default function Book() {
                 label: '🟢',
                 action: (cfiRange) => {
                   addAnnotation('highlight', cfiRange, undefined, {
-                    color: theme?.green1?.val,
+                    color: theme?.green?.val,
                   })
                   return true
                 },
@@ -201,8 +202,25 @@ export default function Book() {
                 label: '翻译',
                 action: (cfiRange, text) => {
                   setSelection({ cfiRange, text })
-                  addAnnotation('highlight', cfiRange, { isTranslation: true })
-                  annotationsListRef.current?.present()
+                  translationByBaidu(text)
+                    .then((res) => {
+                      addAnnotation(
+                        'underline',
+                        cfiRange,
+                        {
+                          isTranslation: true,
+                          observation: res ?? '',
+                        },
+                        {
+                          color: theme?.o_red?.val,
+                          thickness: 4,
+                        },
+                      )
+                      annotationsListRef.current?.present()
+                    })
+                    .catch((error) => {
+                      console.log(error)
+                    })
                   return true
                 },
               },

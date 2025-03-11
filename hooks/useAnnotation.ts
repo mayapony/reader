@@ -24,20 +24,14 @@ export const useAnnotation = () => {
     }
   }
 
-  const handleUpdateAnnotation = async (annotation: Annotation, data?: object, style?: object) => {
+  const handleUpdateAnnotation = async (annotation: Annotation, data?: object, styles?: object) => {
     const annotationId = annotation.data.id
+    console.log({ annotation })
     if (!annotationId) {
       return
     }
 
-    console.log({ annotation, data, style })
-    const dataBackup = annotation.data
-    const stylesBackup = annotation.styles
-    let tempAnnotation = structuredClone(annotation)
-    tempAnnotation.data = data
-    tempAnnotation.styles = style
-    updateAnnotation(annotation, data, style)
-    console.log({ data })
+    console.log({ annotation, data, styles })
     try {
       const result = await drizzleDb
         .update(annotationTable)
@@ -47,19 +41,49 @@ export const useAnnotation = () => {
           sectionIndex: annotation.sectionIndex,
           cfiRangeText: annotation.cfiRangeText,
           iconClass: annotation.iconClass,
-          styles: JSON.stringify(style),
+          styles: JSON.stringify(styles),
           data: JSON.stringify(data),
         })
         .where(eq(annotationTable.id, annotationId))
 
+      updateAnnotation(annotation, data, styles)
+
       console.log(result)
     } catch (error) {
-      updateAnnotation(tempAnnotation, dataBackup, stylesBackup)
+      console.log(error)
+    }
+  }
+
+  const handleDeleteAnnotation = async (annotation: Annotation, annotations: Annotation[]) => {
+    const annotationId = annotation.data.id
+    if (!annotationId) {
+      return
+    }
+    try {
+      const result = await drizzleDb
+        .delete(annotationTable)
+        .where(eq(annotationTable.id, annotationId))
+
+      /**
+       * Required for the "add note" scenario, as an "underline" and "mark" type annotation is created in it and both work as one...
+       */
+      if (annotation.data?.key) {
+        const withMarkAnnotations = annotations.filter(
+          ({ data }) => data.key === annotation.data.key,
+        )
+
+        withMarkAnnotations.forEach((_annotation) => removeAnnotation(_annotation))
+      } else {
+        removeAnnotation(annotation)
+      }
+      console.log(result)
+    } catch (error) {
       console.log(error)
     }
   }
 
   return {
     handleUpdateAnnotation,
+    handleDeleteAnnotation,
   }
 }

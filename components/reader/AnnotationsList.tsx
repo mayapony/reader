@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import { useAnnotation } from '@/hooks/useAnnotation'
 import { Annotation, useReader } from '@epubjs-react-native/core'
 import {
   BottomSheetFlatList,
@@ -14,6 +15,7 @@ import AnnotationItem from './AnnotationItem'
 export type Selection = {
   cfiRange: string
   text: string
+  id?: number
 }
 
 interface Props {
@@ -26,9 +28,11 @@ export type Ref = BottomSheetModalMethods
 
 export const AnnotationsList = forwardRef<Ref, Props>(
   ({ selection, selectedAnnotation, annotations, onClose }, ref) => {
-    const { theme, removeAnnotation, goToLocation } = useReader()
+    const { theme, goToLocation } = useReader()
 
     const snapPoints = React.useMemo(() => ['50%', '75%', '100%'], [])
+
+    const { handleDeleteAnnotation } = useAnnotation()
 
     const renderItem = React.useCallback(
       // eslint-disable-next-line react/no-unused-prop-types
@@ -40,23 +44,12 @@ export const AnnotationsList = forwardRef<Ref, Props>(
             onClose()
           }}
           onRemoveAnnotation={(annotation) => {
-            /**
-             * Required for the "add note" scenario, as an "underline" and "mark" type annotation is created in it and both work as one...
-             */
-            if (annotation.data?.key) {
-              const withMarkAnnotations = annotations.filter(
-                ({ data }) => data.key === annotation.data.key,
-              )
-
-              withMarkAnnotations.forEach((_annotation) => removeAnnotation(_annotation))
-            } else {
-              removeAnnotation(annotation)
-            }
+            handleDeleteAnnotation(annotation, annotations)
             onClose()
           }}
         />
       ),
-      [annotations, goToLocation, onClose, removeAnnotation],
+      [annotations, goToLocation, onClose, handleDeleteAnnotation],
     )
 
     const header = React.useCallback(

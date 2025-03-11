@@ -1,4 +1,3 @@
-import axios from 'axios'
 import md5 from 'crypto-js/md5'
 
 export async function translationByBaidu(text: string) {
@@ -27,7 +26,6 @@ export async function translationByBaidu(text: string) {
   }
 
   const data = await response.json()
-  console.log({ data: data?.trans_result })
   const dst = data?.trans_result?.[0]?.dst
 
   if (!dst) {
