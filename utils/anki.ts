@@ -1,5 +1,5 @@
 import ExpoAnkiDroidAPIModule from '@/modules/expo-ankidroid-api'
-import { ToastAndroid } from 'react-native'
+import Toast from 'react-native-toast-message'
 
 export function addTranslationCard(from: string, to: string) {
   const card = {
@@ -9,10 +9,19 @@ export function addTranslationCard(from: string, to: string) {
 
   ExpoAnkiDroidAPIModule.addCardsToAnkiDroidAsync([card])
     .then((added) => {
-      ToastAndroid.show(`卡片已成功添加，${added}个`, ToastAndroid.LONG)
+      console.log(added)
+      Toast.show({
+        type: 'success',
+        text1: '卡片添加成功',
+        text2: `正面内容：${from}`,
+      })
     })
     .catch((error) => {
       console.log(error)
-      ToastAndroid.show('卡片添加失败', ToastAndroid.LONG)
+      Toast.show({
+        type: 'error',
+        text1: '卡片添加失败',
+        text2: `正面内容：${from}`,
+      })
     })
 }

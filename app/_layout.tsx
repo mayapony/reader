@@ -16,6 +16,7 @@ import { ActivityIndicator, useColorScheme } from 'react-native'
 import { TamaguiProvider, Theme } from 'tamagui'
 
 import { ReaderProvider } from '@epubjs-react-native/core'
+import * as Notifications from 'expo-notifications'
 import Toast from 'react-native-toast-message'
 
 export const DATABASE_NAME = 'db'
@@ -41,6 +42,7 @@ export default function RootLayout() {
     } else {
       console.log(error)
     }
+    Notifications.requestPermissionsAsync()
   }, [loaded, success, error])
 
   if (!loaded) {

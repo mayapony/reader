@@ -4,25 +4,8 @@ import { Annotation, useReader } from '@epubjs-react-native/core'
 import { eq } from 'drizzle-orm'
 
 export const useAnnotation = () => {
-  const { addAnnotation, updateAnnotation, removeAnnotation } = useReader()
+  const { updateAnnotation, removeAnnotation } = useReader()
   const drizzleDb = useDrizzleDB()
-
-  const handleAddAnnotation = async (annotation: Annotation, bookId: number) => {
-    try {
-      await drizzleDb.insert(annotationTable).values({
-        bookId,
-        type: annotation.type,
-        cfiRange: annotation.cfiRange,
-        sectionIndex: annotation.sectionIndex,
-        cfiRangeText: annotation.cfiRangeText,
-        iconClass: annotation.iconClass,
-        styles: JSON.stringify(annotation.styles),
-        data: JSON.stringify(annotation.data),
-      })
-    } catch (error) {
-      console.log(error)
-    }
-  }
 
   const handleUpdateAnnotation = async (annotation: Annotation, data?: object, styles?: object) => {
     const annotationId = annotation.data.id

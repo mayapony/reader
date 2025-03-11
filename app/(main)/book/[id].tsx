@@ -34,7 +34,7 @@ export default function Book() {
     }
   }, [colorScheme, theme?.background?.val])
 
-  const { width, height } = useWindowDimensions()
+  const { width } = useWindowDimensions()
 
   const { addAnnotation, removeAnnotation, annotations, updateAnnotation } = useReader()
   const [selection, setSelection] = useState<Selection | null>(null)

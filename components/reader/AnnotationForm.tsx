@@ -1,6 +1,7 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { useAnnotation } from '@/hooks/useAnnotation'
+import { addTranslationCard } from '@/utils/anki'
 import { Annotation, useReader } from '@epubjs-react-native/core'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import React, { useEffect, useMemo } from 'react'
@@ -32,6 +33,15 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
 
   const { handleUpdateAnnotation } = useAnnotation()
 
+  const sendToAnki = (annotation: Annotation) => {
+    console.log({ annotation })
+    if (!annotation || !annotation?.cfiRangeText || !annotation?.data?.observation) return
+
+    const { observation } = annotation.data
+    const cfiRangeText = annotation.cfiRangeText
+    addTranslationCard(cfiRangeText, observation)
+  }
+
   useEffect(() => {
     if (annotation) {
       setObservation(annotation.data?.observation)
@@ -43,6 +53,7 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
       setColor(COLORS[0])
     }
   }, [annotation, COLORS])
+
   return (
     <View style={styles.container}>
       {(annotation?.type !== 'highlight' || annotation?.data?.isTranslation) && (
@@ -114,7 +125,12 @@ function AnnotationForm({ annotation, selection, onClose }: Props) {
 
         {annotation && (
           <>
-            <Button size="$2" theme="accent">
+            <Button
+              size="$2"
+              theme="accent"
+              onPress={() => {
+                sendToAnki(annotation)
+              }}>
               <Text>同步Anki</Text>
             </Button>
             <Button

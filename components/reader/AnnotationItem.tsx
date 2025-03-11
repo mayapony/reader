@@ -3,7 +3,7 @@ import { Annotation } from '@epubjs-react-native/core'
 import { BottomSheetView, TouchableOpacity } from '@gorhom/bottom-sheet'
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Text, useTheme } from 'tamagui'
+import { Text } from 'tamagui'
 
 interface Props {
   annotation: Annotation
@@ -12,8 +12,6 @@ interface Props {
 }
 
 function AnnotationItem({ annotation, onPressAnnotation, onRemoveAnnotation }: Props) {
-  const theme = useTheme()
-
   return (
     <BottomSheetView
       key={annotation.cfiRange}
